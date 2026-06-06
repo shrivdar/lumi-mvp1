@@ -28,7 +28,12 @@ data/reference/*.tsv
 .mypy_cache/
 
 # IDE / tools
-.claude/
+# Allow repo-level Claude Code config files; ignore personal overrides.
+.claude/*
+!.claude/settings.json
+!.claude/hooks
+.claude/hooks/*
+!.claude/hooks/session_start.sh
 .vscode/
 .idea/
 *.swp

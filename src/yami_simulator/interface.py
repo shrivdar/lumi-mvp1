@@ -407,7 +407,7 @@ class YamiInterface:
             explanation = await call_llm(
                 prompt=prompt,
                 system="You are an expert protein biochemist providing clear, accurate explanations.",
-                model="claude-haiku-4-5-20251001",
+                model="claude-haiku-4-5",
                 max_tokens=1024,
             )
             return explanation
@@ -490,7 +490,7 @@ class YamiInterface:
             analysis = await call_llm(
                 prompt=prompt,
                 system="You are a protein engineer comparing candidate sequences.",
-                model="claude-haiku-4-5-20251001",
+                model="claude-haiku-4-5",
             )
         except Exception as exc:
             logger.error("LLM compare analysis failed: %s", exc)

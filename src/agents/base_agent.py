@@ -16,6 +16,7 @@ import json
 import logging
 import re
 import subprocess
+import sys
 import textwrap
 import time
 from typing import Any, Callable
@@ -262,12 +263,33 @@ class BaseAgent:
                     model_used=self.model.value,
                 )
 
-        # Max steps exceeded — return partial results
+        # Max steps exceeded — make a best-effort attempt to salvage findings
+        # from the most recent assistant text before giving up. The assistant
+        # message that triggered tool use can still contain partial reasoning
+        # (e.g. a "Finding:" block written alongside a tool call), so we scan
+        # the last assistant turn rather than discarding everything.
         duration = time.time() - start_time
+        last_text = ""
+        for message in reversed(messages):
+            if message.get("role") != "assistant":
+                continue
+            content = message.get("content")
+            if isinstance(content, str):
+                last_text = content
+            elif isinstance(content, list):
+                last_text = "".join(
+                    getattr(block, "text", "")
+                    for block in content
+                    if getattr(block, "type", None) == "text"
+                )
+            if last_text.strip():
+                break
+
+        salvaged = self._extract_findings(last_text) if last_text.strip() else []
         return AgentResult(
             agent_id=self.name,
             task_id=task.task_id,
-            findings=[],
+            findings=salvaged,
             raw_data={
                 "warning": "Max steps exceeded",
                 "last_messages": str(messages[-2:]),
@@ -460,17 +482,18 @@ class BaseAgent:
         )
         for match in import_re.finditer(code):
             pkg = match.group(1)
-            if pkg not in APPROVED_PACKAGES:
-                # Also allow anything that ships with cpython (best effort)
-                try:
-                    import importlib
-
-                    spec = importlib.util.find_spec(pkg)  # type: ignore[union-attr]
-                    if spec is not None and spec.origin is not None and "site-packages" not in spec.origin:
-                        continue  # stdlib — allow
-                except Exception:
-                    pass
-                violations.add(pkg)
+            if pkg in APPROVED_PACKAGES:
+                continue
+            # Allow any module that ships with the standard library.
+            # ``sys.stdlib_module_names`` is the authoritative, frozen set of
+            # top-level stdlib module names (available on 3.10+). This is more
+            # reliable than inspecting ``find_spec(...).origin``, which mis-classifies
+            # built-in modules (origin == "built-in"/"frozen") and namespace
+            # packages (origin is None), and would otherwise blanket-allow any
+            # third-party package merely because it lives outside site-packages.
+            if pkg in sys.stdlib_module_names:
+                continue
+            violations.add(pkg)
         return violations
 
     # ------------------------------------------------------------------
