@@ -15,9 +15,9 @@ from fastmcp import FastMCP
 
 # Relative import when running inside the package; fall back for direct exec.
 try:
-    from src.mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response
+    from src.mcp_servers.base import async_http_get, handle_error, standard_response
 except ImportError:
-    from mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response  # type: ignore[no-redef]
+    from mcp_servers.base import async_http_get, handle_error, standard_response  # type: ignore[no-redef]
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -105,11 +105,11 @@ async def pride_get_project(accession: str) -> dict[str, Any]:
         data = await async_http_get(url, params=None)
 
         title = data.get("title", "Untitled")
-        description = data.get("projectDescription", "No description available.")
-        sample_processing = data.get("sampleProcessingProtocol", "N/A")
+        data.get("projectDescription", "No description available.")
+        data.get("sampleProcessingProtocol", "N/A")
         submission_type = data.get("submissionType", "N/A")
         organisms = data.get("organisms", [])
-        instruments = data.get("instruments", [])
+        data.get("instruments", [])
         pub_date = data.get("publicationDate", "N/A")
         references = data.get("references", [])
 

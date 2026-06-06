@@ -9,7 +9,6 @@ Start with:  python -m src.mcp_servers.genomics.server
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from fastmcp import FastMCP
@@ -603,7 +602,7 @@ async def query_pharmgkb_gene(gene: str) -> dict[str, Any]:
         name = gene_entry.get("name", gene)
         has_rx = gene_entry.get("hasRxAnnotation", False)
         has_cpic = gene_entry.get("hasCpicGuideline", False)
-        cross_refs = gene_entry.get("crossReferences", [])
+        gene_entry.get("crossReferences", [])
 
         # Fetch clinical annotations if available
         clinical_anns = []

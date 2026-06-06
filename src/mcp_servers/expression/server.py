@@ -220,7 +220,7 @@ async def get_pathology_data(gene: str) -> dict[str, Any]:
             )
 
         entry = entries[0]
-        pathology = entry.get("Pathology data", entry.get("pathology", {}))
+        entry.get("Pathology data", entry.get("pathology", {}))
         prognostic = entry.get("Prognostic data", entry.get("prognostic", []))
         rna_cancer = entry.get("RNA cancer", entry.get("rnaCancer", []))
 
@@ -283,7 +283,7 @@ async def query_gene_expression_single_cell(
         for ds in datasets:
             ds_tissue = ds.get("tissue", []) if isinstance(ds.get("tissue"), list) else [ds.get("tissue", "")]
             ds_disease = ds.get("disease", []) if isinstance(ds.get("disease"), list) else [ds.get("disease", "")]
-            ds_name = ds.get("name", "").lower()
+            ds.get("name", "").lower()
 
             tissue_labels = [t.get("label", t) if isinstance(t, dict) else str(t) for t in ds_tissue]
             disease_labels = [d.get("label", d) if isinstance(d, dict) else str(d) for d in ds_disease]

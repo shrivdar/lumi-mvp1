@@ -10,20 +10,18 @@ Start with:  python -m src.mcp_servers.metabolic.server
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import math
-import os
 import pathlib
 from typing import Any
 
 from fastmcp import FastMCP
 
 try:
-    from src.mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response
+    from src.mcp_servers.base import async_http_get, handle_error, standard_response
 except ImportError:
-    from mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response
+    from mcp_servers.base import async_http_get, handle_error, standard_response
 
 # ---------------------------------------------------------------------------
 # Optional COBRApy import

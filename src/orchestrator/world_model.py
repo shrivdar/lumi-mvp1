@@ -22,7 +22,7 @@ from typing import Any, Optional
 
 import aiosqlite
 
-from src.utils.types import Claim, EvidenceSource, FinalReport
+from src.utils.types import Claim, FinalReport
 
 logger = logging.getLogger("lumi.orchestrator.world_model")
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import threading
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 logger = logging.getLogger("lumi.utils.cost_tracker")

@@ -17,7 +17,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from src.utils.types import AgentResult, DivisionReport
+from src.utils.types import DivisionReport
 
 logger = logging.getLogger("lumi.reports.figure_collector")
 

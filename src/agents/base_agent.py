@@ -18,9 +18,8 @@ import re
 import subprocess
 import textwrap
 import time
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
-from src.utils.cost_tracker import cost_tracker
 from src.utils.llm import LLMClient, ModelTier
 from src.utils.types import (
     AgentResult,
@@ -29,7 +28,6 @@ from src.utils.types import (
     ConfidenceLevel,
     EvidenceSource,
     Task,
-    TaskStatus,
 )
 
 logger = logging.getLogger("lumi.agents.base")

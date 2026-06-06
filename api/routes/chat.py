@@ -444,7 +444,6 @@ async def _stream_mock(chat: Chat, msg_id: str):
     # ── Phase 7: HITL — Flag low-confidence clinical claim ──
 
     finding_id = "review_glp1r_clin_001"
-    review_channel = "#neuro-repurposing"
 
     clinical_hitl = {
         "finding": "GLP-1 receptor agonists show disease-modifying potential in Parkinson's disease, with motor score improvement in the exenatide Phase II trial (Athauda et al., 2017, n=62).",
@@ -1105,7 +1104,7 @@ async def _get_live_questions(query: str) -> list[ClarifyQuestion]:
         cleaned = text.strip()
         if cleaned.startswith("```"):
             lines = cleaned.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
+            lines = [ln for ln in lines if not ln.strip().startswith("```")]
             cleaned = "\n".join(lines).strip()
         questions_data = _json.loads(cleaned)
         return [ClarifyQuestion(**q) for q in questions_data[:3]]

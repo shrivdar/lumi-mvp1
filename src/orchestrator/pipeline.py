@@ -18,10 +18,7 @@ from src.orchestrator.stream_events import PipelineEventEmitter, StreamCallback
 from src.utils.cost_tracker import cost_tracker
 from src.utils.types import FinalReport
 
-from src.orchestrator.biosecurity_officer import BiosecurityOfficer
-from src.orchestrator.chief_of_staff import ChiefOfStaff
 from src.orchestrator.cso import CSOOrchestrator
-from src.orchestrator.review_panel import ReviewPanel
 from src.orchestrator.world_model import WorldModel
 
 logger = logging.getLogger("lumi.orchestrator.pipeline")

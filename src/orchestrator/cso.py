@@ -14,9 +14,8 @@ import logging
 import textwrap
 import time
 import uuid
-from typing import Any, Optional
+from typing import Any
 
-from src.utils.cost_tracker import cost_tracker
 from src.utils.llm import LLMClient, ModelTier
 from src.utils.types import (
     BiosecurityAssessment,

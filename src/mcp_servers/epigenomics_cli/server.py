@@ -200,7 +200,7 @@ async def homer_find_motifs(
         known_motifs: list[dict[str, str]] = []
         try:
             with open(f"{output_dir}/knownResults.txt") as fh:
-                header = fh.readline()  # skip header
+                fh.readline()  # skip header
                 for line in fh:
                     parts = line.strip().split("\t")
                     if len(parts) >= 4:

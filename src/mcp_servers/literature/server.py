@@ -9,16 +9,15 @@ Start with:  python -m src.mcp_servers.literature.server
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from fastmcp import FastMCP
 
 # Relative import when running inside the package; fall back for direct exec.
 try:
-    from src.mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response
+    from src.mcp_servers.base import async_http_get, handle_error, standard_response
 except ImportError:
-    from mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response  # type: ignore[no-redef]
+    from mcp_servers.base import async_http_get, handle_error, standard_response  # type: ignore[no-redef]
 
 # ---------------------------------------------------------------------------
 # Constants

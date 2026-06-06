@@ -16,13 +16,11 @@ import json
 import logging
 import textwrap
 import uuid
-from typing import Any
 
 from src.utils.llm import LLMClient, ModelTier
 from src.utils.types import (
     BiosecurityAssessment,
     BiosecurityCategory,
-    BiosecurityScreenResult,
 )
 
 logger = logging.getLogger("lumi.orchestrator.biosecurity_officer")
@@ -305,7 +303,7 @@ class BiosecurityOfficer:
         cleaned = text.strip()
         if cleaned.startswith("```"):
             lines = cleaned.split("\n")
-            lines = [l for l in lines if not l.strip().startswith("```")]
+            lines = [ln for ln in lines if not ln.strip().startswith("```")]
             cleaned = "\n".join(lines).strip()
 
         try:

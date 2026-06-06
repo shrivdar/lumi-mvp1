@@ -268,8 +268,8 @@ async def bwa_align(
             with open(output_file, "w") as f:
                 f.write(stdout)
 
-        alignment_lines = [l for l in stdout.split("\n") if l and not l.startswith("@")]
-        header_lines = [l for l in stdout.split("\n") if l.startswith("@")]
+        alignment_lines = [ln for ln in stdout.split("\n") if ln and not ln.startswith("@")]
+        header_lines = [ln for ln in stdout.split("\n") if ln.startswith("@")]
 
         summary = (
             f"BWA MEM aligned {reads_file} to {reference}: "

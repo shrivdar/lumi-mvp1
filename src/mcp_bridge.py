@@ -20,7 +20,7 @@ Usage::
 from __future__ import annotations
 
 import logging
-from typing import Any, Callable, TypedDict
+from typing import Callable, TypedDict
 
 from src.agents.base_agent import BaseAgent
 
