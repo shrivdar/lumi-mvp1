@@ -97,7 +97,7 @@ export default function Landing() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-8">
+      <main className="hero-glow flex-1 flex flex-col items-center justify-center px-8">
         <div className={clsx("w-full max-w-2xl transition-all duration-700", loaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
           {/* Greeting */}
           <div className="mb-8">
@@ -137,7 +137,11 @@ export default function Landing() {
             />
 
             {/* Toolbar */}
-            <div className="flex items-center justify-end px-4 pb-3.5">
+            <div className="flex items-center justify-between px-4 pb-3.5">
+              <span className="flex items-center gap-1 text-[10px] text-[var(--text-muted)]">
+                <kbd className="rounded border border-[var(--border)] px-1.5 py-0.5 font-sans">⌘K</kbd>
+                <span className="hidden sm:inline">for quick actions</span>
+              </span>
               <button
                 onClick={() => handleSubmit()}
                 disabled={!query.trim() || submitting}

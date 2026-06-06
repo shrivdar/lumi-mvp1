@@ -13,16 +13,14 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
 from src.biosecurity_engine.data import (
-    ALL_CONTROLLED_ORGANISMS,
     AUSTRALIA_GROUP_AGENTS,
     BWC_AGENTS,
     SELECT_AGENTS,
-    TOXIN_PFAM_DOMAINS,
     TOXIN_PFAM_IDS,
 )
 
@@ -629,7 +627,7 @@ class BiosecurityEngine:
         """
         flagged_agents: list[dict] = []
         context_lower = design_context.lower() if design_context else ""
-        seq_desc = f"protein sequence of {len(sequence)} residues"
+        f"protein sequence of {len(sequence)} residues"
 
         # Check design context for mention of controlled organisms
         for agent in BWC_AGENTS:

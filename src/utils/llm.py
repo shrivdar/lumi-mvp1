@@ -17,6 +17,7 @@ import os
 import random
 from collections import defaultdict
 from enum import Enum
+from types import SimpleNamespace
 from typing import Any, Awaitable, Callable, Optional
 
 import anthropic
@@ -30,16 +31,16 @@ logger = logging.getLogger("lumi.utils.llm")
 
 class ModelTier(str, Enum):
     """Available Claude model tiers ordered by capability / cost."""
-    OPUS = "claude-opus-4-6"
+    OPUS = "claude-opus-4-8"
     SONNET = "claude-sonnet-4-6"
-    HAIKU = "claude-haiku-4-5-20251001"
+    HAIKU = "claude-haiku-4-5"
 
 
 # Per-million-token pricing (USD)
 _MODEL_PRICING: dict[ModelTier, dict[str, float]] = {
-    ModelTier.OPUS:   {"input": 15.0,  "output": 75.0},
+    ModelTier.OPUS:   {"input": 5.0,   "output": 25.0},
     ModelTier.SONNET: {"input": 3.0,   "output": 15.0},
-    ModelTier.HAIKU:  {"input": 0.80,  "output": 4.0},
+    ModelTier.HAIKU:  {"input": 1.0,   "output": 5.0},
 }
 
 # Task-type -> model routing table
@@ -130,6 +131,77 @@ def get_concurrency_gate() -> ConcurrencyGate:
 
 
 # ---------------------------------------------------------------------------
+# Offline / mock mode
+# ---------------------------------------------------------------------------
+
+def is_offline() -> bool:
+    """Return True when the client should run without touching the network.
+
+    Offline mode is active when ``LUMI_OFFLINE`` is truthy OR when
+    ``ANTHROPIC_API_KEY`` is unset/empty. This lets the platform run
+    deterministically without an API key (e.g. in CI or local demos).
+    """
+    if os.environ.get("LUMI_OFFLINE"):
+        return True
+    return not os.environ.get("ANTHROPIC_API_KEY")
+
+
+def _rejects_sampling_params(model: "ModelTier | str") -> bool:
+    """Return True for models that 400 on temperature/top_p/top_k.
+
+    Opus 4.7 and later (incl. Opus 4.8) reject all sampling parameters.
+    Accepts either a ``ModelTier`` enum or a raw model-id string; resolving
+    via ``.value`` is required because ``str(ModelTier.OPUS)`` yields
+    ``'ModelTier.OPUS'``, not the model id.
+    """
+    mid = model.value if isinstance(model, ModelTier) else str(model)
+    return mid.startswith("claude-opus-4-")
+
+
+def _offline_text(messages: list[dict[str, Any]]) -> str:
+    """Build a deterministic synthetic response containing a Finding block.
+
+    The text always includes a ``Finding:`` / ``Confidence:`` / ``Evidence:``
+    block so downstream claim extraction produces a Claim. We derive a short
+    task reference from the last user message if available.
+    """
+    task_ref = "the submitted task"
+    for msg in reversed(messages):
+        if msg.get("role") == "user":
+            content = msg.get("content")
+            if isinstance(content, str) and content.strip():
+                task_ref = content.strip().replace("\n", " ")[:120]
+                break
+            if isinstance(content, list):
+                for block in content:
+                    text = block.get("text") if isinstance(block, dict) else None
+                    if text:
+                        task_ref = text.strip().replace("\n", " ")[:120]
+                        break
+                if task_ref != "the submitted task":
+                    break
+    return (
+        "Offline mock response (no API key / LUMI_OFFLINE set).\n"
+        f"Finding: Offline deterministic analysis of {task_ref}.\n"
+        "Confidence: MEDIUM\n"
+        "Evidence: offline-mock"
+    )
+
+
+def _make_offline_response(messages: list[dict[str, Any]]) -> SimpleNamespace:
+    """Construct a synthetic, duck-typed Anthropic-Message-like object.
+
+    The object exposes ``.content`` (a list of one text block with ``.type``
+    and ``.text``) and ``.usage`` (with integer ``input_tokens`` /
+    ``output_tokens``). It never contains tool_use blocks, so agent loops
+    terminate immediately.
+    """
+    text_block = SimpleNamespace(type="text", text=_offline_text(messages))
+    usage = SimpleNamespace(input_tokens=0, output_tokens=0)
+    return SimpleNamespace(content=[text_block], usage=usage, stop_reason="end_turn")
+
+
+# ---------------------------------------------------------------------------
 # Simple one-shot helper (kept for backward compatibility)
 # ---------------------------------------------------------------------------
 
@@ -145,20 +217,24 @@ async def call_llm(
     This is a thin convenience wrapper.  For production agent code
     prefer :class:`LLMClient` which tracks costs and supports tools.
     """
+    messages = [{"role": "user", "content": prompt}]
+
+    # Offline mode: return a deterministic synthetic response, no network.
+    if is_offline():
+        return _offline_text(messages)
+
     try:
         api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-        if not api_key:
-            logger.warning("ANTHROPIC_API_KEY not set; returning placeholder response")
-            return f"[LLM unavailable] Prompt was: {prompt[:200]}..."
-
         client = anthropic.AsyncAnthropic(api_key=api_key, max_retries=0)
-        messages = [{"role": "user", "content": prompt}]
         kwargs: dict[str, Any] = {
             "model": model,
             "max_tokens": max_tokens,
             "messages": messages,
-            "temperature": temperature,
         }
+        # Opus 4.7+ rejects sampling params (temperature/top_p/top_k → HTTP 400).
+        # Only send temperature for models that accept it.
+        if not _rejects_sampling_params(model):
+            kwargs["temperature"] = temperature
         if system:
             kwargs["system"] = system
 
@@ -186,16 +262,23 @@ class LLMClient:
     """
 
     def __init__(self) -> None:
-        # Disable SDK built-in retry — we handle retries ourselves in chat()
-        # with gate-aware backoff.  SDK retries fight our gate and cause storms.
-        self._client = anthropic.AsyncAnthropic(max_retries=0)
+        # In offline mode we never touch the network, so skip creating the
+        # real SDK client entirely (constructing it with no key is tolerated
+        # by the SDK, but there's no reason to do it offline).
+        if is_offline():
+            self._client = None
+        else:
+            # Disable SDK built-in retry — we handle retries ourselves in
+            # chat() with gate-aware backoff. SDK retries fight our gate and
+            # cause storms.
+            self._client = anthropic.AsyncAnthropic(max_retries=0)
         self._total_cost: float = 0.0
         self._cost_by_model: dict[str, float] = defaultdict(float)
         self._call_count: int = 0
 
     # -- cost helpers -------------------------------------------------------
 
-    def _record_usage(self, model: ModelTier, usage: anthropic.types.Usage) -> float:
+    def _record_usage(self, model: ModelTier, usage: Any) -> float:
         """Compute and record cost for a single API call. Returns the cost."""
         pricing = _MODEL_PRICING.get(model, _MODEL_PRICING[ModelTier.SONNET])
         cost = (
@@ -270,14 +353,28 @@ class LLMClient:
             temperature: Sampling temperature.
 
         Returns:
-            The raw ``anthropic.types.Message`` response.
+            The raw ``anthropic.types.Message`` response (or a duck-typed
+            synthetic equivalent in offline mode).
         """
+        # Offline mode: return a deterministic synthetic response immediately.
+        # No network, no concurrency gate, no retries/sleeps. Cost is recorded
+        # as 0/0 tokens so get_cost() reports $0.
+        if is_offline():
+            response = _make_offline_response(messages)
+            self._record_usage(model, response.usage)
+            return response
+
         kwargs: dict[str, Any] = {
             "model": model.value,
             "messages": messages,
             "max_tokens": max_tokens,
-            "temperature": temperature,
         }
+        # NOTE: Opus 4.7+ (incl. Opus 4.8) rejects sampling params — sending
+        # temperature/top_p/top_k returns HTTP 400. Only send temperature for
+        # tiers that accept it. (Opus also supports thinking={"type": "adaptive"};
+        # not enabled here to keep the existing tool-use loop unchanged.)
+        if not _rejects_sampling_params(model):
+            kwargs["temperature"] = temperature
         if system is not None:
             kwargs["system"] = system
         if tools is not None:

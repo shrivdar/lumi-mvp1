@@ -63,6 +63,7 @@ from src.agents import (
     # Division 6: Computational Biology
     create_literature_synthesis_agent,
     create_systems_biology_agent,
+    create_competitive_intelligence_agent,
     # Division 7: Experimental Design
     create_assay_design_agent,
     create_lab_automation_agent,
@@ -232,6 +233,7 @@ def create_system() -> dict[str, DivisionLead]:
     # Division 6 -- Computational Biology
     lit_synth = create_literature_synthesis_agent()
     sys_bio = create_systems_biology_agent()
+    comp_intel = create_competitive_intelligence_agent()
 
     # Division 7 -- Experimental Design
     assay_des = create_assay_design_agent()
@@ -297,7 +299,7 @@ def create_system() -> dict[str, DivisionLead]:
             specialist_agents=[clin_trial],
         ),
         "Computational Biology": create_compbio_lead(
-            specialist_agents=[lit_synth, sys_bio],
+            specialist_agents=[lit_synth, sys_bio, comp_intel],
         ),
         "Experimental Design": create_experimental_lead(
             specialist_agents=[assay_des, lab_auto, protocols],

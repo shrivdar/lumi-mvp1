@@ -10,7 +10,6 @@ Start with:  python -m src.mcp_servers.cheminformatics.server
 
 from __future__ import annotations
 
-import json
 import logging
 from typing import Any
 from urllib.parse import quote
@@ -18,9 +17,9 @@ from urllib.parse import quote
 from fastmcp import FastMCP
 
 try:
-    from src.mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response
+    from src.mcp_servers.base import async_http_get, handle_error, standard_response
 except ImportError:
-    from mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response
+    from mcp_servers.base import async_http_get, handle_error, standard_response
 
 # ---------------------------------------------------------------------------
 # Optional RDKit import
@@ -31,7 +30,6 @@ try:
         AllChem,
         DataStructs,
         Descriptors,
-        Lipinski,
         rdMolDescriptors,
     )
 
@@ -648,7 +646,7 @@ async def search_zinc(
         availability.
     """
     try:
-        encoded = quote(smiles, safe="")
+        quote(smiles, safe="")
         url = f"{ZINC_API}/substances/search/"
         params = {
             "q": smiles,

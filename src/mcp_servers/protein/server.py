@@ -369,7 +369,7 @@ async def get_structure_info(pdb_id: str) -> dict[str, Any]:
 
         # Citation
         citation = data.get("citation", [{}])
-        first_citation = citation[0].get("title", "") if citation else ""
+        citation[0].get("title", "") if citation else ""
 
         summary = (
             f"PDB {pdb_id_upper}: {title}. "

@@ -11,7 +11,6 @@ import asyncio
 import logging
 import math
 import re
-import time
 from typing import Any
 
 import httpx
@@ -457,7 +456,6 @@ async def predict_structure_alphafold(uniprot_id: str) -> dict[str, Any]:
                 async with httpx.AsyncClient(timeout=30.0) as client:
                     conf_resp = await client.get(conf_url)
                     if conf_resp.status_code == 200:
-                        import json as _json
                         conf_data = conf_resp.json()
                         if isinstance(conf_data, list) and conf_data:
                             plddt_values = conf_data[0].get("confidenceScore", [])
@@ -708,7 +706,6 @@ def calculate_cai(protein_sequence: str, organism: str = "ecoli") -> dict[str, A
 
     # Relative adaptiveness values (simplified; 1.0 = optimal, lower = rarer)
     # For a real implementation, use full codon usage tables from Kazusa
-    rare_threshold = 0.3
 
     org_key = organism.lower()
     if org_key not in optimal_codons:
@@ -742,14 +739,13 @@ def calculate_cai(protein_sequence: str, organism: str = "ecoli") -> dict[str, A
     random.seed(42)  # deterministic
 
     simulated_cai_sum = 0.0
-    rare_codons_detail: list[dict] = []
 
     for i, aa in enumerate(clean_seq):
         codons = aa_to_codons.get(aa, [])
         if not codons:
             continue
 
-        optimal = opt_table.get(aa, codons[0])
+        opt_table.get(aa, codons[0])
         # Assign relative adaptiveness: optimal = 1.0, others decrease
         n_codons = len(codons)
         if n_codons == 1:
@@ -761,7 +757,7 @@ def calculate_cai(protein_sequence: str, organism: str = "ecoli") -> dict[str, A
         # Check if there are rare codons for this amino acid
         if n_codons > 2:
             # Mark amino acids that have many synonymous codons as having rare options
-            rare_fraction = (n_codons - 1) / n_codons
+            (n_codons - 1) / n_codons
             if aa in "RLSA" and n_codons >= 4:
                 # These AAs have the most codon degeneracy
                 pass
@@ -948,7 +944,7 @@ def predict_developability(sequence: str) -> dict[str, Any]:
 
     # 3. Oxidation-prone sites: exposed methionine, tryptophan
     met_positions = [i + 1 for i, aa in enumerate(clean_seq) if aa == "M"]
-    trp_positions = [i + 1 for i, aa in enumerate(clean_seq) if aa == "W"]
+    [i + 1 for i, aa in enumerate(clean_seq) if aa == "W"]
     if met_positions:
         risk_flags.append({
             "type": "methionine_oxidation",

@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import threading
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 logger = logging.getLogger("lumi.utils.cost_tracker")
@@ -20,9 +20,9 @@ logger = logging.getLogger("lumi.utils.cost_tracker")
 # ---------------------------------------------------------------------------
 
 PRICING: dict[str, dict[str, float]] = {
-    "claude-opus-4-6": {"input": 15.0, "output": 75.0},
+    "claude-opus-4-8": {"input": 5.0, "output": 25.0},
     "claude-sonnet-4-6": {"input": 3.0, "output": 15.0},
-    "claude-haiku-4-5-20251001": {"input": 0.80, "output": 4.0},
+    "claude-haiku-4-5": {"input": 1.0, "output": 5.0},
 }
 
 

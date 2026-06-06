@@ -15,8 +15,9 @@ import { PlanPanel } from "@/components/panels/plan-panel";
 import { ToolsPanel } from "@/components/panels/tools-panel";
 import { ReviewPanel } from "@/components/panels/review-panel";
 import type { ReviewData } from "@/components/panels/review-panel";
+import { ConfidencePanel } from "@/components/panels/confidence-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Send, PanelRightOpen, PanelRightClose, FlaskConical, User, ChevronRight } from "lucide-react";
+import { Send, PanelRightOpen, PanelRightClose, FlaskConical, User, ChevronRight, Gauge } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import clsx from "clsx";
@@ -40,6 +41,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [liveEvents, setLiveEvents] = useState<LiveEvent[]>([]);
   const [rightOpen, setRightOpen] = useState(true);
   const [pipelineOpen, setPipelineOpen] = useState(true);
+  const [confidenceOpen, setConfidenceOpen] = useState(true);
   const [agentsOpen, setAgentsOpen] = useState(true);
   const [toolsOpen, setToolsOpen] = useState(true);
   const [clarifyQuestions, setClarifyQuestions] = useState<ClarifyQuestion[] | null>(null);
@@ -219,6 +221,16 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const liveIntegrationEvents = liveEvents.filter(
     (e): e is Extract<LiveEvent, { kind: "integration" }> => e.kind === "integration"
   );
+
+  // Confidence panel data: prefer live events while streaming, else the latest
+  // assistant message's persisted traces + HITL events.
+  const latestAssistant = [...(chat?.messages ?? [])]
+    .reverse()
+    .find((m) => m.role === "assistant");
+  const confidenceTraces: AgentTrace[] =
+    liveTracesFromEvents.length > 0 ? liveTracesFromEvents : latestAssistant?.agent_traces ?? [];
+  const confidenceHitl: HitlRequest[] =
+    liveHitlEvents.length > 0 ? liveHitlEvents.map((e) => e.hitl) : latestAssistant?.hitl_events ?? [];
 
   if (!chat) {
     return (
@@ -423,6 +435,25 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                   <div className="overflow-hidden">
                     <div className="px-4 pb-4 pt-1">
                       <PlanPanel liveTraces={liveTracesFromEvents} streaming={streaming} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Confidence */}
+              <div className="border-b border-[var(--border)]">
+                <button
+                  onClick={() => setConfidenceOpen(!confidenceOpen)}
+                  className="flex w-full items-center gap-1.5 p-4 pb-2 text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)] hover:text-[var(--text)] transition-colors"
+                >
+                  <ChevronRight size={12} className={clsx("transition-transform duration-200", confidenceOpen && "rotate-90")} />
+                  <Gauge size={12} className="-ml-0.5" />
+                  Confidence
+                </button>
+                <div className={clsx("grid transition-[grid-template-rows] duration-200 ease-out", confidenceOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]")}>
+                  <div className="overflow-hidden">
+                    <div className="px-4 pb-4 pt-1">
+                      <ConfidencePanel traces={confidenceTraces} hitlEvents={confidenceHitl} />
                     </div>
                   </div>
                 </div>

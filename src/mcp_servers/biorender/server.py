@@ -258,7 +258,7 @@ async def generate_volcano_plot(
 
         scatter_data = []
         for row in data:
-            gene = row.get("gene", "")
+            row.get("gene", "")
             log2fc = float(row.get("log2fc", 0))
             pval = float(row.get("pvalue", 1))
             neg_log10p = -math.log10(max(pval, 1e-300))

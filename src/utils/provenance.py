@@ -8,10 +8,9 @@ exports a full provenance chain for the final report.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
 from typing import Any, Optional
 
-from .types import Claim, ConfidenceLevel, EvidenceSource
+from .types import Claim, EvidenceSource
 
 
 class ProvenanceTracker:

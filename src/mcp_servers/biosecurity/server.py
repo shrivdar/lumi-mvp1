@@ -12,7 +12,6 @@ Start with:  python -m src.mcp_servers.biosecurity.server
 from __future__ import annotations
 
 import asyncio
-import json
 import re
 from typing import Any
 
@@ -20,9 +19,9 @@ from fastmcp import FastMCP
 
 # Relative import when running inside the package; fall back for direct exec.
 try:
-    from src.mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response
+    from src.mcp_servers.base import async_http_get, handle_error, standard_response
 except ImportError:
-    from mcp_servers.base import async_http_get, async_http_post, handle_error, standard_response  # type: ignore[no-redef]
+    from mcp_servers.base import async_http_get, handle_error, standard_response  # type: ignore[no-redef]
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -600,7 +599,7 @@ async def check_select_agent_list(query: str) -> dict[str, Any]:
             m.pop("_match_score", None)
 
         is_select_agent = len(exact_matches) > 0
-        all_matches = exact_matches + partial_matches
+        exact_matches + partial_matches
 
         if is_select_agent:
             categories = list(set(m["category"] for m in exact_matches))
@@ -682,7 +681,7 @@ async def scan_toxin_domains(sequence: str) -> dict[str, Any]:
                 name = metadata.get("name", "").lower()
                 accession = metadata.get("accession", "N/A")
                 entry_type = metadata.get("type", "N/A")
-                desc = metadata.get("name", "N/A")
+                metadata.get("name", "N/A")
 
                 domain_info = {
                     "accession": accession,
@@ -849,7 +848,7 @@ async def screen_virulence_factors(sequence: str) -> dict[str, Any]:
                         "matched_sequence": m.group(),
                     })
 
-        all_flags = virulence_flags + heuristic_flags
+        virulence_flags + heuristic_flags
 
         # Risk assessment
         if virulence_flags:

@@ -1,5 +1,7 @@
 # Lumi
 
+[![CI](https://github.com/shrivdar/lumi-mvp1/actions/workflows/ci.yml/badge.svg)](https://github.com/shrivdar/lumi-mvp1/actions/workflows/ci.yml)
+
 Multi-agent virtual lab for drug discovery. A 9-phase orchestration pipeline coordinates specialist AI agents across biology, chemistry, and clinical domains to produce confidence-scored findings with biosecurity veto gates, adversarial review, and human-in-the-loop routing.
 
 ## How it works
@@ -50,9 +52,47 @@ app.py                   # Streamlit UI
 
 Python 3.11+ · Claude Opus/Sonnet/Haiku (anthropic SDK) · FastMCP v3 · Streamlit · SQLite (WorldModel)
 
-## Dev
+## Development
+
+### Install
 
 ```bash
-ruff check src/
-pytest
+make install
+# or directly:
+pip install -e ".[dev]"
 ```
+
+Heavy optional extras (`[bio]`, `[ml]`, `[chem]`) pull in torch, scanpy, and rdkit — omit them for a lightweight dev setup.
+
+### Lint
+
+```bash
+make lint
+# expands to: ruff check src/ api/
+```
+
+### Test
+
+```bash
+make test
+# expands to: LUMI_OFFLINE=1 python -m pytest -q
+```
+
+### Offline mode
+
+Set `LUMI_OFFLINE=1` to run the pipeline, agents, and full test suite with deterministic mock LLM responses — no API key required. This is what CI uses.
+
+```bash
+LUMI_OFFLINE=1 python -m pytest -q
+```
+
+### Live runs
+
+For live calls to the Anthropic API, copy `.env.template` to `.env` and set your key:
+
+```bash
+cp .env.template .env
+# edit .env and set ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Models used: CSOOrchestrator → `claude-opus-4-8`; ReviewPanel / BiosecurityOfficer → `claude-sonnet-4-6`; ChiefOfStaff → `claude-haiku-4-5`.

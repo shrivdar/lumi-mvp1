@@ -12,7 +12,7 @@ SUBLABS: dict[str, SublabInfo] = {
     "target-validation": SublabInfo(
         name="Target Validation",
         description="Evidence dossiers with pathway diagrams and confidence scores",
-        agents=["target_biologist", "bio_pathways", "literature_synthesis", "fda_safety"],
+        agents=["target_biologist", "bio_pathways", "literature_synthesis", "fda_safety", "competitive_intelligence"],
         divisions=["Target Identification", "Target Safety", "Computational Biology"],
         examples=[
             "Evaluate BRCA1 as a therapeutic target for triple-negative breast cancer",
@@ -67,7 +67,7 @@ SUBLABS: dict[str, SublabInfo] = {
     "clinical-translation": SublabInfo(
         name="Clinical Translation",
         description="Go/no-go evidence packages for IND-enabling studies",
-        agents=["clinical_trialist", "pharmacologist", "statistical_genetics", "fda_safety"],
+        agents=["clinical_trialist", "pharmacologist", "statistical_genetics", "fda_safety", "competitive_intelligence"],
         divisions=["Clinical Intelligence", "Target Safety", "Computational Biology"],
         examples=[
             "Build go/no-go evidence package for anti-IL-17 antibody IND filing",
@@ -83,7 +83,7 @@ AGENTS_BY_DIVISION: dict[str, list[str]] = {
     "Modality Selection": ["target_biologist", "pharmacologist"],
     "Molecular Design": ["protein_intelligence", "antibody_engineer", "structure_design", "lead_optimization", "developability"],
     "Clinical Intelligence": ["clinical_trialist"],
-    "Computational Biology": ["literature_synthesis"],
+    "Computational Biology": ["literature_synthesis", "competitive_intelligence"],
     "Experimental Design": ["assay_design"],
     "Biosecurity": ["dual_use_screening"],
 }
@@ -117,24 +117,9 @@ async def list_sublabs() -> dict[str, SublabInfo]:
     return SUBLABS
 
 
-@router.get("/{sublab_id}")
-async def get_sublab(sublab_id: str) -> SublabInfo:
-    return SUBLABS[sublab_id]
-
-
-@router.get("/{sublab_id}/agents")
-async def get_sublab_agents(sublab_id: str) -> list[AgentInfo]:
-    sublab = SUBLABS[sublab_id]
-    active = set(sublab.agents)
-    agents = []
-    for division, agent_ids in AGENTS_BY_DIVISION.items():
-        for agent_id in agent_ids:
-            if agent_id in active:
-                memberships = [s.name for s in SUBLABS.values() if agent_id in s.agents]
-                agents.append(AgentInfo(id=agent_id, division=division, status="active", sublabs=memberships))
-    return agents
-
-
+# NOTE: literal "/meta/*" routes must be declared BEFORE the parametrized
+# "/{sublab_id}" routes — otherwise "/meta/agents" is captured by
+# "/{sublab_id}/agents" (sublab_id="meta") and 500s with KeyError.
 @router.get("/meta/agents")
 async def list_all_agents() -> list[AgentInfo]:
     agents = []
@@ -153,3 +138,21 @@ async def list_tools() -> list[ToolInfo]:
 @router.get("/meta/integrations")
 async def list_integrations() -> list[IntegrationInfo]:
     return INTEGRATIONS
+
+
+@router.get("/{sublab_id}")
+async def get_sublab(sublab_id: str) -> SublabInfo:
+    return SUBLABS[sublab_id]
+
+
+@router.get("/{sublab_id}/agents")
+async def get_sublab_agents(sublab_id: str) -> list[AgentInfo]:
+    sublab = SUBLABS[sublab_id]
+    active = set(sublab.agents)
+    agents = []
+    for division, agent_ids in AGENTS_BY_DIVISION.items():
+        for agent_id in agent_ids:
+            if agent_id in active:
+                memberships = [s.name for s in SUBLABS.values() if agent_id in s.agents]
+                agents.append(AgentInfo(id=agent_id, division=division, status="active", sublabs=memberships))
+    return agents

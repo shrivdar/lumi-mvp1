@@ -150,7 +150,7 @@ class YamiInterface:
             fold_confidence = 0.3  # low confidence fallback
 
         # Expression prediction from properties
-        gravy = props_result.get("gravy", 0.0)
+        props_result.get("gravy", 0.0)
         sol_class = sol_result.get("solubility_class", "unknown")
 
         if sol_class == "soluble" and instability_idx < 40:
@@ -407,7 +407,7 @@ class YamiInterface:
             explanation = await call_llm(
                 prompt=prompt,
                 system="You are an expert protein biochemist providing clear, accurate explanations.",
-                model="claude-haiku-4-5-20251001",
+                model="claude-haiku-4-5",
                 max_tokens=1024,
             )
             return explanation
@@ -490,7 +490,7 @@ class YamiInterface:
             analysis = await call_llm(
                 prompt=prompt,
                 system="You are a protein engineer comparing candidate sequences.",
-                model="claude-haiku-4-5-20251001",
+                model="claude-haiku-4-5",
             )
         except Exception as exc:
             logger.error("LLM compare analysis failed: %s", exc)
@@ -551,13 +551,15 @@ class YamiInterface:
         }
 
     def _safe_protein_properties(self, sequence: str) -> dict[str, Any]:
+        err = "protein property tools unavailable"
         try:
             self._ensure_tools()
             if self._tools_imported:
                 return self._calculate_protein_properties(sequence)
         except Exception as exc:
+            err = str(exc)
             logger.warning("calculate_protein_properties failed: %s", exc)
-        return {"error": str(exc), "instability_index": 40.0, "gravy": 0.0}
+        return {"error": err, "instability_index": 40.0, "gravy": 0.0}
 
     def _safe_predict_solubility(self, sequence: str) -> dict[str, Any]:
         try:

@@ -8,7 +8,6 @@ no-ops when no callback is provided.
 from __future__ import annotations
 
 import logging
-import time
 from typing import Any, Awaitable, Callable
 
 logger = logging.getLogger("lumi.orchestrator.stream_events")
