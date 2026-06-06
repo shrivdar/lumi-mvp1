@@ -38,6 +38,7 @@ from src.agents.clinical_trialist import create_clinical_trialist_agent
 # Division 6: CompBio
 from src.agents.literature_synthesis import create_literature_synthesis_agent
 from src.agents.systems_biology import create_systems_biology_agent
+from src.agents.competitive_intelligence import create_competitive_intelligence_agent
 
 # Division 7: Experimental
 from src.agents.assay_design import create_assay_design_agent
@@ -89,6 +90,7 @@ __all__ = [
     # Division 6: CompBio
     "create_literature_synthesis_agent",
     "create_systems_biology_agent",
+    "create_competitive_intelligence_agent",
     # Division 7: Experimental
     "create_assay_design_agent",
     "create_lab_automation_agent",
@@ -131,6 +133,7 @@ AGENT_REGISTRY: dict[str, callable] = {
     "clinical_trialist": create_clinical_trialist_agent,
     "literature_synthesis": create_literature_synthesis_agent,
     "systems_biology": create_systems_biology_agent,
+    "competitive_intelligence": create_competitive_intelligence_agent,
     "assay_design": create_assay_design_agent,
     "lab_automation": create_lab_automation_agent,
     "protocols": create_protocols_agent,

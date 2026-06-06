@@ -148,6 +148,15 @@ DOMAIN_PROMPTS: dict[str, str] = {
         "publication bias detection and narrative synthesis across heterogeneous evidence, "
         "knowledge gap identification and research frontier mapping."
     ),
+    "competitive_intelligence": (
+        "Your expertise spans: competitive and IP landscape analysis for drug targets and modalities, "
+        "mapping competing programs by mechanism of action, modality, and clinical phase, "
+        "ClinicalTrials.gov pipeline reconnaissance and sponsor identification, "
+        "approved-drug and clinical-stage asset benchmarking (efficacy, safety, differentiation), "
+        "high-level patent / freedom-to-operate (FTO) signal assessment from public literature and filings, "
+        "whitespace and differentiation analysis (unmet need, novel MoA, biomarker strategy), "
+        "competitive timing and probability-of-success context for go/no-go decisions."
+    ),
     "assay_design": (
         "Your expertise spans: biochemical assay design (enzymatic, binding / SPR / ITC / FP, reporter gene), "
         "cell-based assay design (proliferation, viability, signalling reporters), "

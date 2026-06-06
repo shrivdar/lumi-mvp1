@@ -289,6 +289,28 @@ body {
   box-shadow: 0 0 0 3px rgba(155, 138, 196, 0.2);
 }
 
+/* Subtle ambient hero glow — tinted with the lilac accent, theme-aware */
+.hero-glow {
+  position: relative;
+}
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 70%);
+  z-index: 0;
+}
+[data-theme="light"] .hero-glow::before {
+  background:
+    radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 70%);
+}
+.hero-glow > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* Active accent indicator */
 .active-indicator {
   position: relative;
